@@ -10,16 +10,26 @@ import SwiftUI
 struct AppChannelPopupView: View {
     @State var selectedChannel: AppChannelType
     @Environment(\.safeAreaInsets) var safeAreaInsets
+    var arrayOfChannels: [AppChannelType] = AppChannelType.allCases
+    @State var search = ""
+    
     var action: ((AppChannelType)->())? = nil
+    
+    var arrayOfChannelsFiltered: [AppChannelType] {
+        if search.isEmpty {
+            return arrayOfChannels
+        } else {
+            return arrayOfChannels.filter { $0.rawValue.localizedCaseInsensitiveContains(search) }
+        }
+    }
     
     var body: some View {
         ZStack(alignment: .bottom) {
             Color.black.opacity(0.5)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-
+            
             contentView
                 .frame(height: 580 + safeAreaInsets.bottom)
-            
         }
         .ignoresSafeArea()
     }
@@ -35,11 +45,11 @@ struct AppChannelPopupView: View {
             
             ScrollView {
                 VStack(spacing: 0) {
-                    ForEach(AppChannelType.allCases, id: \.self) { channel in
+                    ForEach(arrayOfChannelsFiltered, id: \.self) { channel in
                         AppOptionItemView(channel: channel, isSelected: channel == selectedChannel)
                             .onTapGesture {
                                 self.selectedChannel = channel
-//                                action?(channel)
+                                // The action is now handled by the "done" button in PopupTopView
                             }
                     }
                 }
@@ -60,7 +70,7 @@ struct AppChannelPopupView: View {
                 .padding(.leading, 16)
                 .padding(.trailing, 10)
             
-            TextField("Search", text: .constant(""))
+            TextField("Search", text: $search)
         }
         .frame(height: 44)
         .frame(maxWidth: .infinity)
